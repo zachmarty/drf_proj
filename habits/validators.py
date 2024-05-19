@@ -1,6 +1,21 @@
+from typing import Any
 from rest_framework.exceptions import ValidationError
 
 from habits.models import Habit
+
+class TimeValidator:
+    def __init__(self, field) -> None:
+        self.field = field
+
+    def __call__(self, value, *args: Any, **kwds: Any) -> Any:
+        try:
+            tmp_val = value[self.field]
+        except:
+            raise ValidationError("Running time must be attached")
+        if tmp_val > 120 * 60:
+            raise ValidationError("Running time (in seconds) cannot take more than 2 minutes")
+        if tmp_val <= 0 :
+            raise ValidationError("Put correct running time")
 
 def check_input_data(data):
     if data["usefull"] == True:
@@ -37,3 +52,5 @@ def check_input_data(data):
         if data["publicated"] == True:
             raise ValidationError(detail="Pleasant habits cannot be publicated")
     return data
+
+
