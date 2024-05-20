@@ -44,11 +44,10 @@ class HabitViewSet(ModelViewSet):
         else:
             raise APIException("Habit is not pulicated", status.HTTP_406_NOT_ACCEPTABLE)
 
-    def list(self, request, *args, **kwargs):
-        queryset = Habit.objects.filter(publicated=True)
+    def get_queryset(self):
+        queryset = Habit.objects.filter(publicated = True)
         paginated_queryset = self.paginate_queryset(queryset)
-        serializer = self.get_serializer(paginated_queryset, many = True)
-        return Response(serializer.data)
+        return paginated_queryset
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -89,8 +88,13 @@ class SelfHabitsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     pagination_class = HabitPaginator
 
-    def get(self, request, *args, **kwargs):
-        queryset = Habit.objects.filter(user=request.user)
+    def get_queryset(self):
+        queryset = Habit.objects.filter(user = self.request.user)
         paginated_queryset = self.paginate_queryset(queryset)
-        self.serializer = self.get_serializer(paginated_queryset, many = True)
-        return Response(self.serializer.data)
+        return paginated_queryset
+
+    # def get(self, request, *args, **kwargs):
+    #     queryset = Habit.objects.filter(user=request.user)
+    #     paginated_queryset = self.paginate_queryset(queryset)
+    #     serializer = self.get_serializer(paginated_queryset, many = True)
+    #     return Response(self.serializer.data)
