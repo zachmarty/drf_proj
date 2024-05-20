@@ -15,6 +15,10 @@ djangorestframework = "^3.15.1"
 djangorestframework-simplejwt = "^5.3.1"
 django-cors-headers = "^4.3.1"
 drf-yasg = "^1.21.7"
+celery = "^5.4.0"
+eventlet = "^0.36.1"
+redis = "^5.0.4"
+requests = "^2.31.0"
 
 
 [build-system]

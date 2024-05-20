@@ -28,6 +28,7 @@ class Habit(models.Model):
     running_time = models.FloatField(verbose_name="Время выполнения")
     publicated = models.BooleanField(default=False, verbose_name="Признак публикации")
     last_update = models.DateTimeField(verbose_name='Последнее обновление', blank=True, null=True)
+    last_run = models.DateField(verbose_name="Последний запуск", blank=True, null=True)
 
     class Meta:
         verbose_name = "Привычка"

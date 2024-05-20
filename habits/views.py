@@ -1,5 +1,6 @@
 import datetime
 from django.shortcuts import render
+from pytz import timezone
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from habits.models import Habit
@@ -11,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 from rest_framework import status
 
+from habits.tasks import send_reminder
 from habits.validators import check_input_data
 
 
@@ -63,14 +65,16 @@ class HabitViewSet(ModelViewSet):
         new_habit = Habit.objects.create(**data)
         new_habit.related_habit = related_habit
         new_habit.user = request.user
-        new_habit.last_update = datetime.datetime.now()
+        if new_habit.usefull == True:
+            new_habit.last_run = datetime.date.today()
+        new_habit.last_update = datetime.datetime.now(timezone("Europe/Moscow"))
         new_habit.save()
         return Response(data=data)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
         instance = self.get_object()
-        instance.last_update = datetime.datetime.now()
+        instance.last_update = datetime.datetime.now(timezone("Europe/Moscow"))
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         data = check_input_data(request.data)
@@ -87,5 +91,6 @@ class SelfHabitsView(ListAPIView):
     def get(self, request, *args, **kwargs):
         queryset = Habit.objects.filter(user=request.user)
         paginated_queryset = self.paginate_queryset(queryset)
+        send_reminder.delay(request.user.id)
         self.serializer = self.get_serializer(paginated_queryset, many = True)
         return Response(self.serializer.data)
