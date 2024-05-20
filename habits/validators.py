@@ -1,3 +1,4 @@
+import datetime
 from typing import Any
 from rest_framework.exceptions import ValidationError
 
@@ -20,6 +21,12 @@ class TimeValidator:
         if tmp_val <= 0:
             raise ValidationError("Put correct running time")
 
+
+def run_time_validator(habit : Habit):
+    if habit.running_time >= 120:
+        raise ValidationError(
+            detail="Running time cannot be more than 120 sec"
+        )
 
 def check_input_data(data):
     if data["usefull"] == True:

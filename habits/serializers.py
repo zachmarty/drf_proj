@@ -11,6 +11,7 @@ class HabitSerializer(serializers.ModelSerializer):
         exclude = [
             "user",
             "last_update",
+            "last_run",
         ]
         extra_kwargs = {
             "reward": {"required": True},

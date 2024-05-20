@@ -13,7 +13,7 @@ from rest_framework.exceptions import APIException
 from rest_framework import status
 
 from habits.tasks import send_reminder
-from habits.validators import check_input_data
+from habits.validators import check_input_data, run_time_validator
 
 
 # Create your views here.
@@ -79,6 +79,7 @@ class HabitViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         data = check_input_data(request.data)
         self.perform_update(serializer)
+        run_time_validator(self.get_object())
         return Response(serializer.data)
 
 
@@ -91,6 +92,5 @@ class SelfHabitsView(ListAPIView):
     def get(self, request, *args, **kwargs):
         queryset = Habit.objects.filter(user=request.user)
         paginated_queryset = self.paginate_queryset(queryset)
-        send_reminder.delay(request.user.id)
         self.serializer = self.get_serializer(paginated_queryset, many = True)
         return Response(self.serializer.data)
