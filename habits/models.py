@@ -5,6 +5,8 @@ from users.models import User
 
 # Create your models here.
 class Habit(models.Model):
+    """Модель привычки"""
+
     user = models.ForeignKey(
         User,
         verbose_name="Пользователь",
@@ -27,7 +29,9 @@ class Habit(models.Model):
     reward = models.CharField(max_length=100, verbose_name="Вознагрождение", null=True)
     running_time = models.FloatField(verbose_name="Время выполнения")
     publicated = models.BooleanField(default=False, verbose_name="Признак публикации")
-    last_update = models.DateTimeField(verbose_name='Последнее обновление', blank=True, null=True)
+    last_update = models.DateTimeField(
+        verbose_name="Последнее обновление", blank=True, null=True
+    )
     last_run = models.DateField(verbose_name="Последний запуск", blank=True, null=True)
 
     class Meta:

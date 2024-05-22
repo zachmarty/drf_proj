@@ -6,6 +6,8 @@ from habits.models import Habit
 
 
 class TimeValidator:
+    """Валидатор проверки времени выполнения привычки"""
+
     def __init__(self, field) -> None:
         self.field = field
 
@@ -22,13 +24,14 @@ class TimeValidator:
             raise ValidationError("Put correct running time")
 
 
-def run_time_validator(habit : Habit):
+def run_time_validator(habit: Habit):
+    """Проверка на длительность выполнения привычки"""
     if habit.running_time >= 120:
-        raise ValidationError(
-            detail="Running time cannot be more than 120 sec"
-        )
+        raise ValidationError(detail="Running time cannot be more than 120 sec")
+
 
 def check_input_data(data):
+    """Проверка корректности введенной награды за выполнение полезной привычки"""
     if data["usefull"] == True:
         if data["related_habit"] == None and data["reward"] == None:
             raise ValidationError(

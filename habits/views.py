@@ -9,7 +9,7 @@ from habits.permissions import IsUserOrSuper
 from habits.serializers import HabitSerializer
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, NotFound
 from rest_framework import status
 
 from habits.tasks import send_reminder
@@ -18,12 +18,15 @@ from habits.validators import check_input_data, run_time_validator
 
 # Create your views here.
 class HabitViewSet(ModelViewSet):
+    """Вью сет для работы с привычками"""
+
     serializer_class = HabitSerializer
     queryset = Habit.objects.all()
     http_method_names = ["get", "post", "put", "delete"]
     pagination_class = HabitPaginator
 
     def get_permissions(self):
+        """Получение прав доступа"""
         if self.action == "list":
             self.permission_classes = [IsAuthenticated]
         elif self.action == "retrieve":
@@ -37,24 +40,37 @@ class HabitViewSet(ModelViewSet):
         return [permission() for permission in self.permission_classes]
 
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.publicated == True or instance.user == request.user:
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
+        """Просмотр привычки, если не опубликована - отказ"""
+        instance = Habit.objects.filter(id=kwargs["pk"])
+        if instance.exists():
+            instance = instance.first()
+            if instance.publicated == True or instance.user == request.user:
+                serializer = self.get_serializer(instance)
+                return Response(serializer.data)
+            else:
+                raise APIException(
+                    "Habit is not pulicated", status.HTTP_406_NOT_ACCEPTABLE
+                )
         else:
-            raise APIException("Habit is not pulicated", status.HTTP_406_NOT_ACCEPTABLE)
+            raise NotFound
 
     def get_queryset(self):
-        queryset = Habit.objects.filter(publicated = True)
+        """Получение опубликованных привычек + пагинация"""
+        queryset = Habit.objects.filter(publicated=True)
         paginated_queryset = self.paginate_queryset(queryset)
         return paginated_queryset
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
+        """Немного измененное удаление привычки"""
+        instance = Habit.objects.filter(id=kwargs["pk"])
+        if not (instance.exists()):
+            raise NotFound
+        instance = instance.first()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT, data="Success")
 
     def create(self, request, *args, **kwargs):
+        """Создание привычки + проерки + добавление текущего пользователя, последнего запуска, последнего обновления"""
         data = request.data
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -71,25 +87,34 @@ class HabitViewSet(ModelViewSet):
         return Response(data=data)
 
     def update(self, request, *args, **kwargs):
+        """Обновление привычки + проверки"""
         partial = kwargs.pop("partial", False)
-        instance = self.get_object()
+        instance = Habit.objects.filter(id=kwargs["pk"])
+        if not (instance.exists()):
+            raise NotFound
+        instance = instance.first()
+        data = request.data
+        data["last_update"] = datetime.datetime.now(timezone("Europe/Moscow"))
         instance.last_update = datetime.datetime.now(timezone("Europe/Moscow"))
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         data = check_input_data(request.data)
         self.perform_update(serializer)
-        run_time_validator(self.get_object())
+        run_time_validator(instance)
         return Response(serializer.data)
 
 
 class SelfHabitsView(ListAPIView):
+    """Апи для отображения своих привычек"""
+
     serializer_class = HabitSerializer
     queryset = Habit.objects.all()
     permission_classes = [IsAuthenticated]
     pagination_class = HabitPaginator
 
     def get_queryset(self):
-        queryset = Habit.objects.filter(user = self.request.user)
+        """Получение списка привычек"""
+        queryset = Habit.objects.filter(user=self.request.user)
         paginated_queryset = self.paginate_queryset(queryset)
         return paginated_queryset
 

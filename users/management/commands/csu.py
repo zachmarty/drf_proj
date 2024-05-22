@@ -4,6 +4,7 @@ from users.models import User
 
 
 class Command(BaseCommand):
+    """Команда для создания суперпользователя"""
 
     def handle(self, *args: Any, **options: Any) -> str | None:
         try:

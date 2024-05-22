@@ -8,6 +8,8 @@ from users.serializers import UserSerializer
 
 
 class UserCreateView(CreateAPIView):
+    """Апи создания пользователя"""
+
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
