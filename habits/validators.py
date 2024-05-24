@@ -1,13 +1,10 @@
 import datetime
 from typing import Any
 from rest_framework.exceptions import ValidationError
-
 from habits.models import Habit
-
 
 class TimeValidator:
     """Валидатор проверки времени выполнения привычки"""
-
     def __init__(self, field) -> None:
         self.field = field
 
@@ -22,6 +19,21 @@ class TimeValidator:
             )
         if tmp_val <= 0:
             raise ValidationError("Put correct running time")
+
+class PeriodValidator:
+    """Валидатор проверки выполнения привычки не чаще чем раз в 7 дней"""
+    def __init__(self, field) -> None:
+        self.field = field
+
+    def __call__(self, value, *args: Any, **kwds: Any) -> Any:
+        try:
+            tmp_val = value[self.field]
+        except:
+            raise ValidationError("Period must be attached")
+        if tmp_val < 7:
+            raise ValidationError("Period must be more than 6 days")
+        if tmp_val > 14:
+            raise ValidationError("Period must be lesser than 2 weeks")
 
 
 def run_time_validator(habit: Habit):

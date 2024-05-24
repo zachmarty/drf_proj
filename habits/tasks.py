@@ -2,10 +2,8 @@ import datetime
 from celery import shared_task
 import requests
 from django.conf import settings
-
 from habits.models import Habit
 from users.models import User
-
 
 @shared_task
 def send_reminder(user_id):
@@ -19,7 +17,7 @@ def send_reminder(user_id):
     print(datetime.timedelta(days=5))
     if habits.exists():
         for habit in habits:
-            times: datetime.timedelta = datetime.date.today() - habit.last_run
+            times:datetime.timedelta = datetime.date.today() - habit.last_run
             if int(times.days) == int(habit.period):
                 message += f"Надо выполнить {habit.action} в {habit.start_time} в {habit.place}"
         if message != "Сегодня надо выполнить:\n":

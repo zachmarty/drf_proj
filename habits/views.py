@@ -10,14 +10,10 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException, NotFound
 from rest_framework import status
-
 from habits.validators import check_input_data, run_time_validator
 
-
-# Create your views here.
 class HabitViewSet(ModelViewSet):
     """Вью сет для работы с привычками"""
-
     serializer_class = HabitSerializer
     queryset = Habit.objects.all()
     http_method_names = ["get", "post", "put", "delete"]
@@ -25,15 +21,7 @@ class HabitViewSet(ModelViewSet):
 
     def get_permissions(self):
         """Получение прав доступа"""
-        if self.action == "list":
-            self.permission_classes = [IsAuthenticated]
-        elif self.action == "retrieve":
-            self.permission_classes = [IsAuthenticated]
-        elif self.action == "create":
-            self.permission_classes = [IsAuthenticated]
-        elif self.action == "update":
-            self.permission_classes = [IsAuthenticated, IsUserOrSuper]
-        elif self.action == "destroy":
+        if self.action == "update" or self.action == "destroy":
             self.permission_classes = [IsAuthenticated, IsUserOrSuper]
         return [permission() for permission in self.permission_classes]
 
@@ -101,10 +89,8 @@ class HabitViewSet(ModelViewSet):
         run_time_validator(instance)
         return Response(serializer.data)
 
-
 class SelfHabitsView(ListAPIView):
     """Апи для отображения своих привычек"""
-
     serializer_class = HabitSerializer
     queryset = Habit.objects.all()
     permission_classes = [IsAuthenticated]
@@ -115,9 +101,3 @@ class SelfHabitsView(ListAPIView):
         queryset = Habit.objects.filter(user=self.request.user)
         paginated_queryset = self.paginate_queryset(queryset)
         return paginated_queryset
-
-    # def get(self, request, *args, **kwargs):
-    #     queryset = Habit.objects.filter(user=request.user)
-    #     paginated_queryset = self.paginate_queryset(queryset)
-    #     serializer = self.get_serializer(paginated_queryset, many = True)
-    #     return Response(self.serializer.data)

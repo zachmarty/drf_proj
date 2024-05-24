@@ -1,11 +1,8 @@
-import json
 from rest_framework.test import APITestCase
 from django.urls import reverse_lazy
 from rest_framework import status
-
 from habits.models import Habit
 from users.models import User
-
 
 class HabitTestCase(APITestCase):
     """Тест кейсы на привычки"""
