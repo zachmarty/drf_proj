@@ -1,10 +1,12 @@
 from typing import Any
 from django.core.management import BaseCommand
+from habits.tasks import send_reminder
 from users.models import User
 from rest_framework.exceptions import NotFound
 
 class Command(BaseCommand):
     """Команда для создания суперпользователя"""
+    send_reminder(1)
     def handle(self, *args: Any, **options: Any) -> str | None:
         try:
             admin = User.objects.get(email="admin@mail.ru")
