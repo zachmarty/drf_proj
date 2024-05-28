@@ -1,18 +1,77 @@
-version: '3'
+version: '3.8'
 
 services:
   db:
-    image: postgres
+    image: postgres:15.1-alpine
     environment:
-      POSTGRES_USER: 'postgres'
-      POSTGRES_DB: 'drf_proj'
-      POSTGRES_PASSWORD: 1
-      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_USER: ${USER}
+      POSTGRES_DB: ${NAME}
+      POSTGRES_PASSWORD: ${PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    ports:
+      - 5430:5432
+    healthcheck:
+      test: pg_isready -U ${USER} -d ${NAME}
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:6.2.4-alpine
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: redis-cli ping
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  celery:
+    build: .
+    command: celery -A config worker -l info
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      PORT: 5432
+      REDIS_URL: redis://redis:6379/0
+
+  celery-beat:
+    build: .
+    command: celery -A config beat -l info -S django
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      PORT: 5432
+      REDIS_URL: redis://redis:6379/0
+      
 
   app:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     ports:
       - '8000:8000'
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      PORT: 5432
+      REDIS_URL: redis://redis:6379/0
+
+
+volumes:
+  pg_data:
+

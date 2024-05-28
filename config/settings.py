@@ -104,7 +104,8 @@ DATABASES = {
         "NAME": os.getenv("NAME"),
         "USER": os.getenv("USER"),
         "PASSWORD": os.getenv("PASSWORD"),
-        "HOST": "db",
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("PORT")
     }
 }
 
@@ -165,8 +166,8 @@ CORS_ALLOW_ALL_ORIGINS = False
 TELEGRAM_API = os.getenv("TELEGRAM_API")
 TELEGRAM_CHAT = os.getenv("TELEGRAM_CHAT")
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_URL = os.getenv("REDIS_URL")
+CELERY_RESULT_BACKEND = os.getenv("REDIS_URL")
 
 # Часовой пояс для работы Celery
 CELERY_TIMEZONE = "Europe/Moscow"
