@@ -9,8 +9,6 @@ services:
       POSTGRES_PASSWORD: ${PASSWORD}
     volumes:
       - pg_data:/var/lib/postgresql/data/
-    ports:
-      - 5430:5432
     healthcheck:
       test: pg_isready -U ${USER} -d ${NAME}
       interval: 3s
@@ -19,8 +17,6 @@ services:
 
   redis:
     image: redis:6.2.4-alpine
-    ports:
-      - 6379:6379
     healthcheck:
       test: redis-cli ping
       interval: 3s
