@@ -28,3 +28,7 @@ TELEGRAM_CHAT (ваш айди)
 ## API
 
 Документация по работе с api представлена по урлу /swagger или /redoc
+
+## Docker
+
+Для запуска приложения в docker используйте комманды docker-compose build, docker-compose up
